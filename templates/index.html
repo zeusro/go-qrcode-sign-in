@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>扫码登录</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+</head>
+<body>
+<h1>扫码登录</h1>
+<p id="status">等待扫码...</p>
+<p id="scan_url"> >登录url</p>
+<canvas id="qrcode-container"></canvas>
+<pre><b>流程:
+1. 页面获取扫码登录的随机码，前端绘制相应图形
+2. 用户扫码访问url
+3. 后端接收收到扫码结果，并用web socket通知用
+todo：
+    1. 限制获取登录随机码的频率
+    2. url设计为一个中转页面，需要用户确认授权才进入到下一个流程
+    3. 获取成功结果之后暂存授权信息，并跳转页面
+</b></pre>
+<script>
+    // 获取二维码并生成图形
+    fetch("/generate_qrcode")
+        .then(res => res.json())
+        .then(data => {
+            const qrCodeContainer = document.getElementById("qrcode-container");
+            console.log(data)
+            const host ="http://localhost:8080/scan_qrcode?code="
+            // 使用 QRCode.js 生成二维码
+            QRCode.toCanvas(qrCodeContainer, host+data.qrcode, {
+                width: 200, // 宽度
+                height: 200, // 高度
+            }, (error) => {
+                if (error) {
+                    console.error("二维码生成失败:", error);
+                    return;
+                }
+                console.log("二维码生成成功");
+            });
+
+            // 设置URL链接
+            var url = host+data.qrcode;  // 替换为你实际的URL
+
+            // 创建新的超链接元素
+            var link = document.createElement("a");
+            link.href = url;
+            link.target = "_blank";
+            link.textContent =url;
+            document.getElementById("scan_url").innerText="访问"
+            document.getElementById("scan_url").appendChild(link);
+
+            // 建立 WebSocket 连接
+            const ws = new WebSocket("ws://" + location.host + "/ws");
+            ws.onopen = () => ws.send(JSON.stringify({ code: data.qrcode }));
+
+            ws.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                document.getElementById("status").innerText = `状态: ${msg.status}`;
+            };
+        });
+</script>
+</body>
+</html>
