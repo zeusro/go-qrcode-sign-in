@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>扫码登录</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="./static/qrcode.min.js"></script>
 </head>
 <body>
 <h1>扫码登录</h1>
@@ -14,11 +14,7 @@
 <pre><b>流程:
 1. 页面获取扫码登录的随机码，前端绘制相应图形
 2. 用户扫码访问url
-3. 后端接收收到扫码结果，并用web socket通知用
-todo：
-    1. 限制获取登录随机码的频率
-    2. url设计为一个中转页面，需要用户确认授权才进入到下一个流程
-    3. 获取成功结果之后暂存授权信息，并跳转页面
+3. 后端接收收到扫码结果，并用web socket通知用户
 </b></pre>
 <script>
     // 获取二维码并生成图形
